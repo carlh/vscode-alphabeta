@@ -107,6 +107,27 @@ const onDidUpdateTextDocument = async (
   }
 };
 
+let disposables: vscode.Disposable[] = [];
+let showAnnotations: boolean = false;
+let refreshInterval: number = 10;
+
+const debugConfiguration = () => {
+  console.log(`Show annotations: ${showAnnotations}`);
+  console.log(`Refresh interval: ${refreshInterval}`);
+};
+
+const updateConfiguration = () => {
+  refreshInterval = vscode.workspace
+    .getConfiguration('AlphaBETA')
+    .get('refreshInterval') as number;
+
+  showAnnotations = vscode.workspace
+    .getConfiguration('AlphaBETA')
+    .get('showAnnotations') as boolean;
+
+  debugConfiguration();
+};
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -127,37 +148,37 @@ export function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
-    onDidUpdateTextDocument(
-      vscode.window.activeTextEditor?.document,
-      vscode.window.activeTextEditor,
-      decorationType
-    );
-  });
+  updateConfiguration();
 
-  vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
-    onDidUpdateTextDocument(
-      vscode.window.activeTextEditor?.document,
-      vscode.window.activeTextEditor,
-      decorationType
-    );
-  });
-
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
-  let disposable = vscode.commands.registerCommand(
-    'alphabeta.helloWorld',
-    () => {
-      // The code you place here will be executed every time your command is executed
-
-      // Display a message box to the user
-      vscode.window.showInformationMessage('Hello World from AlphaBETA!');
+  vscode.workspace.onDidChangeConfiguration((e) => {
+    if (e.affectsConfiguration('AlphaBETA')) {
+      updateConfiguration();
     }
+  });
+
+  disposables.push(
+    vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
+      onDidUpdateTextDocument(
+        vscode.window.activeTextEditor?.document,
+        vscode.window.activeTextEditor,
+        decorationType
+      );
+    })
   );
 
-  context.subscriptions.push(disposable);
+  disposables.push(
+    vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
+      onDidUpdateTextDocument(
+        vscode.window.activeTextEditor?.document,
+        vscode.window.activeTextEditor,
+        decorationType
+      );
+    })
+  );
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+  disposables.forEach((disposable) => disposable.dispose());
+  disposables = [];
+}

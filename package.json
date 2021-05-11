@@ -23,7 +23,26 @@
 				"title": "Show Prerelease Annotations",
 				"category": "AlphaBETA"
 			}
-		]
+		],
+		"configuration": {
+			"title": "AlphaBETA",
+			"properties": {
+				"AlphaBETA.showAnnotations": {
+					"type": "boolean",
+					"scope": "window",
+					"default": true,
+					"description": "If this is enabled, any usage of APIs marked as @alpha, @beta, or @internal in their JSDoc comments will be highlighted."
+				},
+				"AlphaBETA.refreshInterval": {
+					"type": "integer",
+					"scope": "window",
+					"default": 10,
+					"minimum": 2,
+					"maximum": 60,
+					"description": "Specifies the number of seconds that elapse between updates.  If you experience slow performance you can increase this number."
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
