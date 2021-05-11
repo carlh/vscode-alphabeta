@@ -137,7 +137,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
     onDidUpdateTextDocument(
-      document,
+      vscode.window.activeTextEditor?.document,
       vscode.window.activeTextEditor,
       decorationType
     );
