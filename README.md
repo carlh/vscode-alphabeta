@@ -2,7 +2,18 @@
 
 This is the README for your extension "alphabeta". After writing up a brief description, we recommend including the following sections.
 
+## Running
+
+After cloning the repo, run `npm install` and then open the root directory in Visual Studio Code.
+
+Either press F5 or launch `Run Extension` from the *RUN AND DEBUG* window.
+
+This will launch a new instance of Visual Studio Code with the extension enabled.
+
+Open any javascript or typescript file that is using an API annotated with `@alpha`, `@beta`, or `@internal` attributes.  Wait a few seconds for the extension to initialize, and then the api calls should turn red.
+
 ## Features
+
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
 
