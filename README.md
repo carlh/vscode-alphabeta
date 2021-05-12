@@ -30,10 +30,6 @@ Open any javascript or typescript file that is using an API annotated with `@alp
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 AlphaBETA provides the following settings:
 
 * `AlphaBETA.control.showAnnotations`: enable/disable - overrides the `phase` settings below
