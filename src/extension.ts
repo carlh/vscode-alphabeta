@@ -58,21 +58,21 @@ const containsMarkedRanges = (
 };
 
 const containsBetaAnnotations = (hovers: vscode.Hover[]): boolean => {
-  if (!showBeta) {
+  if (!showBeta || !showAnnotations) {
     return false;
   }
   return containsMarkedRanges(hovers, JSDOC_BETA_ANNOTATION);
 };
 
 const containsAlphaAnnotations = (hovers: vscode.Hover[]): boolean => {
-  if (!showAlpha) {
+  if (!showAlpha || !showAnnotations) {
     return false;
   }
   return containsMarkedRanges(hovers, JSDOC_ALPHA_ANNOTATION);
 };
 
 const containsInternalAnnotations = (hovers: vscode.Hover[]): boolean => {
-  if (!showInternal) {
+  if (!showInternal || !showAnnotations) {
     return false;
   }
   return containsMarkedRanges(hovers, JSDOC_INTERNAL_ANNOTATION);
@@ -105,15 +105,18 @@ const onDidUpdateTextDocument = async (
   editor: vscode.TextEditor | undefined,
   decorationType: vscode.TextEditorDecorationType
 ) => {
-  if (editor && document && showAnnotations) {
-    const positions: vscode.Position[] = getIdentifierPositions(document);
-    const annotations: vscode.Hover[][] = await getHoverAnnotations(
-      document,
-      positions
-    );
-    const prerelease: vscode.Range[] = getAnnotatedRanges(annotations);
-
-    paintAnnotations(editor, prerelease, decorationType);
+  if (editor && document) {
+    if (showAnnotations) {
+      const positions: vscode.Position[] = getIdentifierPositions(document);
+      const annotations: vscode.Hover[][] = await getHoverAnnotations(
+        document,
+        positions
+      );
+      const prerelease: vscode.Range[] = getAnnotatedRanges(annotations);
+      paintAnnotations(editor, prerelease, decorationType);
+    } else {
+      clearAnnotations();
+    }
   }
 };
 
@@ -152,11 +155,7 @@ const updateConfiguration = () => {
     .getConfiguration('AlphaBETA')
     .get('phase.showBeta') as boolean;
 
-  if (showAnnotations) {
-    updateAnnotations();
-  } else {
-    clearAnnotations();
-  }
+  updateAnnotations();
 
   debugConfiguration();
 };
