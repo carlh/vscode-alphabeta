@@ -12,9 +12,11 @@ const getIdentifierPositions = (
   document: vscode.TextDocument
 ): vscode.Position[] => {
   const positions: vscode.Position[] = [];
-  const file: string = document.uri.fsPath;
-  const program: ts.Program = ts.createProgram([file], { allowJs: true });
-  const source: ts.SourceFile | undefined = program.getSourceFile(file);
+  let source: ts.SourceFile | undefined = ts.createSourceFile(
+    `${document.uri.fsPath}.tmp`,
+    document.getText(),
+    ts.ScriptTarget.Latest
+  );
 
   const visit = (node: ts.Node): void => {
     if (ts.isIdentifier(node)) {
@@ -25,7 +27,6 @@ const getIdentifierPositions = (
   if (source) {
     ts.forEachChild(source, visit);
   }
-
   return positions;
 };
 
@@ -95,19 +96,18 @@ const onDidUpdateTextDocument = async (
   editor: vscode.TextEditor | undefined,
   decorationType: vscode.TextEditorDecorationType
 ) => {
-  if (editor && document) {
+  if (editor && document && showAnnotations) {
     const positions: vscode.Position[] = getIdentifierPositions(document);
     const annotations: vscode.Hover[][] = await getHoverAnnotations(
       document,
       positions
     );
-    const deprecated: vscode.Range[] = getAnnotatedRanges(annotations);
+    const prerelease: vscode.Range[] = getAnnotatedRanges(annotations);
 
-    paintAnnotations(editor, deprecated, decorationType);
+    paintAnnotations(editor, prerelease, decorationType);
   }
 };
 
-let disposables: vscode.Disposable[] = [];
 let showAnnotations: boolean = false;
 let refreshInterval: number = 10;
 
@@ -125,54 +125,80 @@ const updateConfiguration = () => {
     .getConfiguration('AlphaBETA')
     .get('showAnnotations') as boolean;
 
+  if (showAnnotations) {
+    updateAnnotations();
+  } else {
+    clearAnnotations();
+  }
+
   debugConfiguration();
 };
 
+let timer: NodeJS.Timeout | null = null;
+let decorationType: vscode.TextEditorDecorationType | null = null;
+
+const updateAnnotations = () => {
+  if (!showAnnotations) {
+    clearAnnotations();
+    return;
+  }
+  if (timer !== null) {
+    clearInterval(timer);
+    timer = null;
+  }
+  vscode.window.visibleTextEditors.forEach((editor) => {
+    if (decorationType) {
+      onDidUpdateTextDocument(editor.document, editor, decorationType);
+    }
+  });
+  timer = setInterval(() => {
+    updateAnnotations();
+  }, refreshInterval * 1000);
+};
+
+const clearAnnotations = () => {
+  if (timer !== null) {
+    clearInterval(timer);
+    timer = null;
+  }
+
+  vscode.window.visibleTextEditors.forEach((editor) => {
+    if (decorationType) {
+      editor.setDecorations(decorationType, []);
+    }
+  });
+};
+
+let disposables: vscode.Disposable[] = [];
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('AlphaBETA is now active');
-  const decorationType: vscode.TextEditorDecorationType =
-    vscode.window.createTextEditorDecorationType({
-      textDecoration: 'underline',
-      color: 'red',
-    });
-
-  setImmediate(() =>
-    onDidUpdateTextDocument(
-      vscode.window.activeTextEditor?.document,
-      vscode.window.activeTextEditor,
-      decorationType
-    )
-  );
+  decorationType = vscode.window.createTextEditorDecorationType({
+    textDecoration: 'underline',
+    color: 'red',
+  });
 
   updateConfiguration();
-
   vscode.workspace.onDidChangeConfiguration((e) => {
     if (e.affectsConfiguration('AlphaBETA')) {
       updateConfiguration();
     }
   });
 
+  setImmediate(() => updateAnnotations());
+
   disposables.push(
     vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
-      onDidUpdateTextDocument(
-        vscode.window.activeTextEditor?.document,
-        vscode.window.activeTextEditor,
-        decorationType
-      );
+      updateAnnotations();
     })
   );
 
   disposables.push(
     vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
-      onDidUpdateTextDocument(
-        vscode.window.activeTextEditor?.document,
-        vscode.window.activeTextEditor,
-        decorationType
-      );
+      updateAnnotations();
     })
   );
 }
