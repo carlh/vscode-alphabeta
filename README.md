@@ -1,6 +1,22 @@
-# alphabeta README
+# AlphaBETA
 
-This is the README for your extension "alphabeta". After writing up a brief description, we recommend including the following sections.
+AlphaBETA highlights usage of APIs that use `@internal`, `@alpha`, and `@beta` in their JSDoc.
+
+## Motivation
+
+If you work with library code that is in development it's likely that some parts of the code are in various stages of readiness.  The majority of APIs might be fully released to the public.  But some APIs might be nearly ready to release, and another API might have been added very recently and clearly isn't ready for public use.  And another API might be meant for internal use entirely.  
+
+When all of these APIs are mixed together in one package, it can be very difficult to tell if the APIs that you're using are actually ready for you.  [Hyrum's Law](https://www.hyrumslaw.com/) says that eventually, anything that _can_ be done with a system *will* be done with the system.  That's especically true in languages like JavaScript.  
+
+In an attempt to limit the damage, some package authors adopt a convention of using [JSDoc](https://jsdoc.app/) tags to indicate the state of each API.  Typically this means that API authors will add `@alpha`, `@beta`, or `@internal` to the header comment for a class, interface, method, enum, etc...
+
+This helps, but the problem is that you'll only see those annotations if you're actually looking at the intellisense tooltip.  And it's extremely likely that you'll overlook a stray `@alpha` tag or two if you're not being unreasonably cautious.
+
+With AlphaBETA, it's impossible to miss.
+
+![Thing is @internal](img/thinginternal.png)
+
+![.foo is @alpha](img/fooisalpha.png)
 
 ## Running
 
@@ -12,35 +28,23 @@ This will launch a new instance of Visual Studio Code with the extension enabled
 
 Open any javascript or typescript file that is using an API annotated with `@alpha`, `@beta`, or `@internal` attributes.  Wait a few seconds for the extension to initialize, and then the api calls should turn red.
 
-## Features
-
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
 ## Extension Settings
 
 Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
 
 For example:
 
-This extension contributes the following settings:
+AlphaBETA provides the following settings:
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+* `AlphaBETA.control.showAnnotations`: enable/disable - overrides the `phase` settings below
+* `AlphaBETA.control.refreshInterval`: controls how often AlphaBETA scans your code and updates the highlighting
+* `AlphaBETA.phase.showInternal`: enable/disable highlighting of `@internal` symbols
+* `AlphaBETA.phase.showAlpha`: enable/disable highlighting of `@alpha` symbols
+* `AlphaBETA.phase.showBeta`: enable/disable highlighting of `@beta` symbols
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Nothing yet.  Please file some!
 
 ## Release Notes
 
@@ -48,34 +52,5 @@ Users appreciate release notes as you update your extension.
 
 ### 1.0.0
 
-Initial release of ...
+Initial release of AlphaBETA
 
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
