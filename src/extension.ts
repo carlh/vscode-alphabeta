@@ -58,14 +58,23 @@ const containsMarkedRanges = (
 };
 
 const containsBetaAnnotations = (hovers: vscode.Hover[]): boolean => {
+  if (!showBeta) {
+    return false;
+  }
   return containsMarkedRanges(hovers, JSDOC_BETA_ANNOTATION);
 };
 
 const containsAlphaAnnotations = (hovers: vscode.Hover[]): boolean => {
+  if (!showAlpha) {
+    return false;
+  }
   return containsMarkedRanges(hovers, JSDOC_ALPHA_ANNOTATION);
 };
 
 const containsInternalAnnotations = (hovers: vscode.Hover[]): boolean => {
+  if (!showInternal) {
+    return false;
+  }
   return containsMarkedRanges(hovers, JSDOC_INTERNAL_ANNOTATION);
 };
 
@@ -110,20 +119,38 @@ const onDidUpdateTextDocument = async (
 
 let showAnnotations: boolean = false;
 let refreshInterval: number = 10;
+let showInternal: boolean = false;
+let showAlpha: boolean = false;
+let showBeta: boolean = false;
 
 const debugConfiguration = () => {
   console.log(`Show annotations: ${showAnnotations}`);
   console.log(`Refresh interval: ${refreshInterval}`);
+  console.log(`Show internal: ${showInternal}`);
+  console.log(`Refresh alpha: ${showAlpha}`);
+  console.log(`Refresh beta: ${showBeta}`);
 };
 
 const updateConfiguration = () => {
   refreshInterval = vscode.workspace
     .getConfiguration('AlphaBETA')
-    .get('refreshInterval') as number;
+    .get('control.refreshInterval') as number;
 
   showAnnotations = vscode.workspace
     .getConfiguration('AlphaBETA')
-    .get('showAnnotations') as boolean;
+    .get('control.showAnnotations') as boolean;
+
+  showInternal = vscode.workspace
+    .getConfiguration('AlphaBETA')
+    .get('phase.showInternal') as boolean;
+
+  showAlpha = vscode.workspace
+    .getConfiguration('AlphaBETA')
+    .get('phase.showAlpha') as boolean;
+
+  showBeta = vscode.workspace
+    .getConfiguration('AlphaBETA')
+    .get('phase.showBeta') as boolean;
 
   if (showAnnotations) {
     updateAnnotations();

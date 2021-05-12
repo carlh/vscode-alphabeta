@@ -27,13 +27,31 @@
 		"configuration": {
 			"title": "AlphaBETA",
 			"properties": {
-				"AlphaBETA.showAnnotations": {
+				"AlphaBETA.control.showAnnotations": {
 					"type": "boolean",
 					"scope": "window",
 					"default": true,
 					"description": "If this is enabled, any usage of APIs marked as @alpha, @beta, or @internal in their JSDoc comments will be highlighted."
 				},
-				"AlphaBETA.refreshInterval": {
+				"AlphaBETA.phase.showInternal": {
+					"type": "boolean",
+					"scope": "window",
+					"default": true,
+					"markdownDescription": "If enabled, symbols annotated with the `@internal` flag will be highlighted.  Depends on `#AlphaBETA.control.showAnnotations#`"
+				},
+				"AlphaBETA.phase.showAlpha": {
+					"type": "boolean",
+					"scope": "window",
+					"default": true,
+					"markdownDescription": "If enabled, symbols annotated with the `@alpha` flag will be highlighted.  Depends on `#AlphaBETA.control.showAnnotations#`"
+				},
+				"AlphaBETA.phase.showBeta": {
+					"type": "boolean",
+					"scope": "window",
+					"default": true,
+					"markdownDescription": "If enabled, symbols annotated with the `@beta` flag will be highlighted.  Depends on `#AlphaBETA.control.showAnnotations#`"
+				},
+				"AlphaBETA.control.refreshInterval": {
 					"type": "integer",
 					"scope": "window",
 					"default": 10,
