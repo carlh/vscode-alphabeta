@@ -1,6 +1,7 @@
 {
 	"name": "alphabeta",
 	"displayName": "AlphaBETA",
+	"publisher": "CarlHinkle",
 	"description": "This extension adds an indicator when you use a symbol that is tagged with @alpha, @beta, and @internal in the JS or TS documentation comment.",
 	"keywords": [
 		"prerelease",
@@ -93,7 +94,9 @@
 		"@typescript-eslint/parser": "^4.14.1",
 		"glob": "^7.1.6",
 		"mocha": "^8.2.1",
-		"typescript": "^4.1.3",
 		"vscode-test": "^1.5.0"
+	},
+	"dependencies": {
+		"typescript": "^4.1.3"
 	}
 }
