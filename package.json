@@ -1,8 +1,21 @@
 {
 	"name": "alphabeta",
 	"displayName": "AlphaBETA",
-	"description": "This extension adds an indicator when you use a symbol that is tagged with @alpha, @beta, and @internal in the JS or TS documentation comment.  You can also add your own tokens.",
-	"version": "0.0.1",
+	"description": "This extension adds an indicator when you use a symbol that is tagged with @alpha, @beta, and @internal in the JS or TS documentation comment.",
+	"keywords": [
+		"prerelease",
+		"jsdoc",
+		"javascript",
+		"typescript"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/carlh/vscode-alphabeta"
+	},
+	"preview": true,
+	"qna": "marketplace",
+	"icon": "img/icon.png",
+	"version": "1.0.0",
 	"engines": {
 		"vscode": "^1.56.0"
 	},
