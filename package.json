@@ -18,7 +18,7 @@
 	"icon": "img/icon.png",
 	"version": "1.0.0",
 	"engines": {
-		"vscode": "^1.56.0"
+		"vscode": "^1.55.0"
 	},
 	"categories": [
 		"Other"
