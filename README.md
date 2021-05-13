@@ -50,3 +50,7 @@ Users appreciate release notes as you update your extension.
 
 Initial release of AlphaBETA
 
+### 1.1.0
+
+Lower minimum VS Code version to ^1.55.0
+
