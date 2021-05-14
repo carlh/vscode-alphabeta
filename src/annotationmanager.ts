@@ -14,7 +14,18 @@ const JSDOC_INTERNAL_ANNOTATION = '*@internal*';
 const JSDOC_ALPHA_ANNOTATION = '*@alpha*';
 const JSDOC_BETA_ANNOTATION = '*@beta*';
 
-type AnnotationUpdateHandler = (file: string, ranges: vscode.Range[]) => void;
+type Phase = 'internal' | 'alpha' | 'beta';
+export interface Annotation {
+  line: number;
+  phase: Phase;
+  range: vscode.Range;
+}
+export interface FileAnnotations {
+  filename: string;
+  annotations: Annotation[];
+}
+
+type AnnotationUpdateHandler = (annotations: FileAnnotations) => void;
 
 class AnnotationUpdateListener {
   private _listeners: AnnotationUpdateHandler[] = [];
@@ -26,9 +37,25 @@ class AnnotationUpdateListener {
 
 export const onAnnotationsUpdate = new AnnotationUpdateListener();
 
-const decorationType = vscode.window.createTextEditorDecorationType({
+const annotationSet: FileAnnotations[] = [];
+
+const internalDecorationType = vscode.window.createTextEditorDecorationType({
   borderColor: 'rgb(145,0,13)',
   backgroundColor: 'rgba(145,0,13,0.8)',
+  borderWidth: '2px',
+  borderRadius: '4px',
+});
+
+const betaDecorationType = vscode.window.createTextEditorDecorationType({
+  borderColor: 'rgb(145,0,13)',
+  backgroundColor: 'rgba(145,145,13,0.8)',
+  borderWidth: '2px',
+  borderRadius: '4px',
+});
+
+const alphaDecorationType = vscode.window.createTextEditorDecorationType({
+  borderColor: 'rgb(145,0,13)',
+  backgroundColor: 'rgba(145,0,138,0.8)',
   borderWidth: '2px',
   borderRadius: '4px',
 });
@@ -105,17 +132,39 @@ const containsInternalAnnotations = (hovers: vscode.Hover[]): boolean => {
   return containsMarkedRanges(hovers, JSDOC_INTERNAL_ANNOTATION);
 };
 
-const getAnnotatedRanges = (hovers: vscode.Hover[][]): vscode.Range[] => {
-  return hovers.reduce((ranges: vscode.Range[], hover: vscode.Hover[]) => {
-    if (
-      containsInternalAnnotations(hover) ||
-      containsAlphaAnnotations(hover) ||
-      containsBetaAnnotations(hover)
-    ) {
-      return [...ranges, hover.pop()?.range as vscode.Range];
+type AnnotatedRangeSet = {
+  alpha: vscode.Range[];
+  beta: vscode.Range[];
+  internal: vscode.Range[];
+};
+const getAnnotatedRanges = (hovers: vscode.Hover[][]): AnnotatedRangeSet => {
+  const annotatedRanges: AnnotatedRangeSet = {
+    alpha: [],
+    beta: [],
+    internal: [],
+  };
+
+  hovers.reduce((ranges: vscode.Range[], hover: vscode.Hover[]) => {
+    let range: vscode.Range;
+    if (containsInternalAnnotations(hover)) {
+      range = hover.pop()?.range as vscode.Range;
+      annotatedRanges.internal.push(range);
+      return [...ranges, range];
+    }
+    if (containsAlphaAnnotations(hover)) {
+      range = hover.pop()?.range as vscode.Range;
+      annotatedRanges.alpha.push(range);
+      return [...ranges, range];
+    }
+    if (containsBetaAnnotations(hover)) {
+      range = hover.pop()?.range as vscode.Range;
+      annotatedRanges.beta.push(range);
+      return [...ranges, range];
     }
     return ranges;
   }, []);
+
+  return annotatedRanges;
 };
 
 const paintAnnotations = (
@@ -129,8 +178,7 @@ const paintAnnotations = (
 
 const onDidUpdateTextDocument = async (
   document: vscode.TextDocument | undefined,
-  editor: vscode.TextEditor | undefined,
-  decorationType: vscode.TextEditorDecorationType
+  editor: vscode.TextEditor | undefined
 ) => {
   if (editor && document) {
     if (showAnnotations) {
@@ -139,10 +187,13 @@ const onDidUpdateTextDocument = async (
         document,
         positions
       );
-      const prerelease: vscode.Range[] = getAnnotatedRanges(annotations);
-      paintAnnotations(editor, prerelease, decorationType);
+      const prerelease: AnnotatedRangeSet = getAnnotatedRanges(annotations);
+      paintAnnotations(editor, prerelease.internal, internalDecorationType);
+      paintAnnotations(editor, prerelease.alpha, alphaDecorationType);
+      paintAnnotations(editor, prerelease.beta, betaDecorationType);
+
       onAnnotationsUpdate.listeners.forEach((listener) => {
-        listener(editor.document.fileName, prerelease);
+        // listener(editor.document.fileName, prerelease);
       });
     } else {
       clearAnnotations();
@@ -160,9 +211,7 @@ export const updateAnnotations = () => {
     timer = null;
   }
   vscode.window.visibleTextEditors.forEach((editor) => {
-    if (decorationType) {
-      onDidUpdateTextDocument(editor.document, editor, decorationType);
-    }
+    onDidUpdateTextDocument(editor.document, editor);
   });
   timer = setInterval(() => {
     updateAnnotations();
@@ -176,8 +225,14 @@ const clearAnnotations = () => {
   }
 
   vscode.window.visibleTextEditors.forEach((editor) => {
-    if (decorationType) {
-      editor.setDecorations(decorationType, []);
+    if (internalDecorationType) {
+      editor.setDecorations(internalDecorationType, []);
+    }
+    if (alphaDecorationType) {
+      editor.setDecorations(alphaDecorationType, []);
+    }
+    if (betaDecorationType) {
+      editor.setDecorations(betaDecorationType, []);
     }
   });
 };

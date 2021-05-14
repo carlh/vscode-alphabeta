@@ -3,10 +3,11 @@ import {
   reportingShowInStatusBar,
   onConfigurationUpdate,
 } from './configurationmanager';
-import { onAnnotationsUpdate } from './annotationmanager';
-const SHOW_PRERELEASE_COUNT = 'alphabeta.showPrereleaseCount';
-let countStatusBarItem: vscode.StatusBarItem;
+import { onAnnotationsUpdate, FileAnnotations } from './annotationmanager';
 
+const SHOW_PRERELEASE_COUNT = 'alphabeta.showPrereleaseCount';
+
+let countStatusBarItem: vscode.StatusBarItem;
 let numberOfPrerelease = 0;
 
 const updateStatusBarText = () => {
@@ -40,13 +41,14 @@ export const registerPrereleaseStatusBarItem = (
     updateStatusBarText();
   });
 
-  onAnnotationsUpdate.addListener(
-    (fileName: string, ranges: vscode.Range[]) => {
-      if (fileName === vscode.window.activeTextEditor?.document.fileName) {
-        numberOfPrerelease = ranges.length;
-        updateStatusBarText();
-      }
+  onAnnotationsUpdate.addListener((annotations: FileAnnotations) => {
+    if (
+      annotations.filename === vscode.window.activeTextEditor?.document.fileName
+    ) {
+      const total = annotations.annotations.length;
+      numberOfPrerelease = total;
+      updateStatusBarText();
     }
-  );
+  });
   updateStatusBarText();
 };
