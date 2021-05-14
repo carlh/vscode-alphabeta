@@ -36,6 +36,11 @@
 				"command": "alphabeta.showPrereleaseAnnotations",
 				"title": "Show Prerelease Annotations",
 				"category": "AlphaBETA"
+			},
+			{
+				"command": "alphabeta.showPrereleaseCount",
+				"title": "Show Prerelease Count",
+				"category": "AlphaBETA"
 			}
 		],
 		"configuration": {
