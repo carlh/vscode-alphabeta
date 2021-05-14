@@ -17,6 +17,7 @@ export let refreshInterval: number = 10;
 export let showInternal: boolean = false;
 export let showAlpha: boolean = false;
 export let showBeta: boolean = false;
+export let reportingShowInStatusBar: boolean = false;
 
 const debugConfiguration = () => {
   console.log(`Show annotations: ${showAnnotations}`);
@@ -24,6 +25,7 @@ const debugConfiguration = () => {
   console.log(`Show internal: ${showInternal}`);
   console.log(`Refresh alpha: ${showAlpha}`);
   console.log(`Refresh beta: ${showBeta}`);
+  console.log(`Show in status bar: ${reportingShowInStatusBar}`);
 };
 
 export const updateConfiguration = () => {
@@ -46,6 +48,10 @@ export const updateConfiguration = () => {
   showBeta = vscode.workspace
     .getConfiguration('AlphaBETA')
     .get('phase.showBeta') as boolean;
+
+  reportingShowInStatusBar = vscode.workspace
+    .getConfiguration('AlphaBETA')
+    .get('reporting.showInStatusBar') as boolean;
 
   onConfigurationUpdate.listeners.forEach((listener) => {
     listener();

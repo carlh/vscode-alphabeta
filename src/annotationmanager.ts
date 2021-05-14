@@ -14,6 +14,18 @@ const JSDOC_INTERNAL_ANNOTATION = '*@internal*';
 const JSDOC_ALPHA_ANNOTATION = '*@alpha*';
 const JSDOC_BETA_ANNOTATION = '*@beta*';
 
+type AnnotationUpdateHandler = (file: string, ranges: vscode.Range[]) => void;
+
+class AnnotationUpdateListener {
+  private _listeners: AnnotationUpdateHandler[] = [];
+  readonly listeners = this._listeners;
+  addListener = (listener: AnnotationUpdateHandler) => {
+    this._listeners.push(listener);
+  };
+}
+
+export const onAnnotationsUpdate = new AnnotationUpdateListener();
+
 const decorationType = vscode.window.createTextEditorDecorationType({
   borderColor: 'rgb(145,0,13)',
   backgroundColor: 'rgba(145,0,13,0.8)',
@@ -129,6 +141,9 @@ const onDidUpdateTextDocument = async (
       );
       const prerelease: vscode.Range[] = getAnnotatedRanges(annotations);
       paintAnnotations(editor, prerelease, decorationType);
+      onAnnotationsUpdate.listeners.forEach((listener) => {
+        listener(editor.document.fileName, prerelease);
+      });
     } else {
       clearAnnotations();
     }

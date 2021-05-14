@@ -77,6 +77,12 @@
 					"minimum": 2,
 					"maximum": 60,
 					"description": "Specifies the number of seconds that elapse between updates.  If you experience slow performance you can increase this number."
+				},
+				"AlphaBETA.reporting.showInStatusBar": {
+					"type": "boolean",
+					"scope": "window",
+					"default": true,
+					"markdownDescription": "If enabled and the active file is using any `prerelease` symbols, a message will be shown in the status bar.  Clicking the message will open a report listing each usage and its line number."
 				}
 			}
 		}
