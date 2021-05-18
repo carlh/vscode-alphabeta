@@ -9,6 +9,11 @@ import {
   showBeta,
   showInternal,
 } from './configurationmanager';
+import {
+  internalDecorationType,
+  betaDecorationType,
+  alphaDecorationType,
+} from './decorations';
 
 const JSDOC_INTERNAL_ANNOTATION = '*@internal*';
 const JSDOC_ALPHA_ANNOTATION = '*@alpha*';
@@ -38,27 +43,6 @@ class AnnotationUpdateListener {
 export const onAnnotationsUpdate = new AnnotationUpdateListener();
 
 const annotationSet: FileAnnotations[] = [];
-
-const internalDecorationType = vscode.window.createTextEditorDecorationType({
-  borderColor: 'rgb(145,0,13)',
-  backgroundColor: 'rgba(145,0,13,0.8)',
-  borderWidth: '2px',
-  borderRadius: '4px',
-});
-
-const betaDecorationType = vscode.window.createTextEditorDecorationType({
-  borderColor: 'rgb(145,0,13)',
-  backgroundColor: 'rgba(145,145,13,0.8)',
-  borderWidth: '2px',
-  borderRadius: '4px',
-});
-
-const alphaDecorationType = vscode.window.createTextEditorDecorationType({
-  borderColor: 'rgb(145,0,13)',
-  backgroundColor: 'rgba(145,0,138,0.8)',
-  borderWidth: '2px',
-  borderRadius: '4px',
-});
 
 let timer: NodeJS.Timeout | null = null;
 
