@@ -42,11 +42,13 @@ export const registerPrereleaseStatusBarItem = (
   });
 
   onAnnotationsUpdate.addListener((annotations: FileAnnotations) => {
-    if (
-      annotations.filename === vscode.window.activeTextEditor?.document.fileName
-    ) {
-      const total = annotations.annotations.length;
-      numberOfPrerelease = total;
+    const annotationsForCurrentFile =
+      annotations[vscode.window.activeTextEditor?.document.fileName ?? ''];
+    if (annotationsForCurrentFile) {
+      numberOfPrerelease =
+        annotationsForCurrentFile.alpha.length +
+        annotationsForCurrentFile.beta.length +
+        annotationsForCurrentFile.internal.length;
       updateStatusBarText();
     }
   });

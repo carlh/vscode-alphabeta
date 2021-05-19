@@ -20,15 +20,18 @@ const JSDOC_ALPHA_ANNOTATION = '*@alpha*';
 const JSDOC_BETA_ANNOTATION = '*@beta*';
 
 type Phase = 'internal' | 'alpha' | 'beta';
-export interface Annotation {
-  line: number;
-  phase: Phase;
-  range: vscode.Range;
-}
+
+export type AnnotatedRangeSet = {
+  alpha: vscode.Range[];
+  beta: vscode.Range[];
+  internal: vscode.Range[];
+};
+
 export interface FileAnnotations {
-  filename: string;
-  annotations: Annotation[];
+  [key: string]: AnnotatedRangeSet;
 }
+
+let annotationsForFiles: FileAnnotations = {};
 
 type AnnotationUpdateHandler = (annotations: FileAnnotations) => void;
 
@@ -41,8 +44,6 @@ class AnnotationUpdateListener {
 }
 
 export const onAnnotationsUpdate = new AnnotationUpdateListener();
-
-const annotationSet: FileAnnotations[] = [];
 
 let timer: NodeJS.Timeout | null = null;
 
@@ -116,11 +117,6 @@ const containsInternalAnnotations = (hovers: vscode.Hover[]): boolean => {
   return containsMarkedRanges(hovers, JSDOC_INTERNAL_ANNOTATION);
 };
 
-type AnnotatedRangeSet = {
-  alpha: vscode.Range[];
-  beta: vscode.Range[];
-  internal: vscode.Range[];
-};
 const getAnnotatedRanges = (hovers: vscode.Hover[][]): AnnotatedRangeSet => {
   const annotatedRanges: AnnotatedRangeSet = {
     alpha: [],
@@ -130,6 +126,7 @@ const getAnnotatedRanges = (hovers: vscode.Hover[][]): AnnotatedRangeSet => {
 
   hovers.reduce((ranges: vscode.Range[], hover: vscode.Hover[]) => {
     let range: vscode.Range;
+    // Just need to add file information here
     if (containsInternalAnnotations(hover)) {
       range = hover.pop()?.range as vscode.Range;
       annotatedRanges.internal.push(range);
@@ -175,9 +172,9 @@ const onDidUpdateTextDocument = async (
       paintAnnotations(editor, prerelease.internal, internalDecorationType);
       paintAnnotations(editor, prerelease.alpha, alphaDecorationType);
       paintAnnotations(editor, prerelease.beta, betaDecorationType);
-
+      annotationsForFiles[document.fileName] = prerelease;
       onAnnotationsUpdate.listeners.forEach((listener) => {
-        // listener(editor.document.fileName, prerelease);
+        listener(annotationsForFiles);
       });
     } else {
       clearAnnotations();
