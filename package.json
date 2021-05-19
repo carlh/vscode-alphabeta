@@ -85,7 +85,36 @@
 					"markdownDescription": "If enabled and the active file is using any `prerelease` symbols, a message will be shown in the status bar.  Clicking the message will open a report listing each usage and its line number."
 				}
 			}
-		}
+		},
+		"colors": [
+			{
+				"id": "AlphaBETA.internal",
+				"description": "Color for symbols flagged as @internal",
+				"defaults": {
+					"dark": "#91000D88",
+					"light": "#91000D88",
+					"highContrast": "#91000D88"
+				}
+			},
+			{
+				"id": "AlphaBETA.alpha",
+				"description": "Color for symbols flagged as @alpha",
+				"defaults": {
+					"dark": "#C0BC1788",
+					"light": "#C0BC1788",
+					"highContrast": "#C0BC1788"
+				}
+			},
+			{
+				"id": "AlphaBETA.beta",
+				"description": "Color for symbols flagged as @beta",
+				"defaults": {
+					"dark": "#12A64B88",
+					"light": "#12A64B88",
+					"highContrast": "#12A64B88"
+				}
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
