@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { updateAnnotations } from './annotationmanager';
 import { updateConfiguration } from './configurationmanager';
+import { registerPrereleaseStatusBarItem } from './prereleaseStatusBarItem';
 
 let disposables: vscode.Disposable[] = [];
 // this method is called when your extension is activated
@@ -17,6 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
       updateConfiguration();
     }
   });
+
+  registerPrereleaseStatusBarItem(context);
 
   setImmediate(() => updateAnnotations());
 

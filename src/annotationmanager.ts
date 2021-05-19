@@ -9,17 +9,41 @@ import {
   showBeta,
   showInternal,
 } from './configurationmanager';
+import {
+  internalDecorationType,
+  betaDecorationType,
+  alphaDecorationType,
+} from './decorations';
 
 const JSDOC_INTERNAL_ANNOTATION = '*@internal*';
 const JSDOC_ALPHA_ANNOTATION = '*@alpha*';
 const JSDOC_BETA_ANNOTATION = '*@beta*';
 
-const decorationType = vscode.window.createTextEditorDecorationType({
-  borderColor: 'rgb(145,0,13)',
-  backgroundColor: 'rgba(145,0,13,0.8)',
-  borderWidth: '2px',
-  borderRadius: '4px',
-});
+type Phase = 'internal' | 'alpha' | 'beta';
+
+export type AnnotatedRangeSet = {
+  alpha: vscode.Range[];
+  beta: vscode.Range[];
+  internal: vscode.Range[];
+};
+
+export interface FileAnnotations {
+  [key: string]: AnnotatedRangeSet;
+}
+
+let annotationsForFiles: FileAnnotations = {};
+
+type AnnotationUpdateHandler = (annotations: FileAnnotations) => void;
+
+class AnnotationUpdateListener {
+  private _listeners: AnnotationUpdateHandler[] = [];
+  readonly listeners = this._listeners;
+  addListener = (listener: AnnotationUpdateHandler) => {
+    this._listeners.push(listener);
+  };
+}
+
+export const onAnnotationsUpdate = new AnnotationUpdateListener();
 
 let timer: NodeJS.Timeout | null = null;
 
@@ -93,17 +117,35 @@ const containsInternalAnnotations = (hovers: vscode.Hover[]): boolean => {
   return containsMarkedRanges(hovers, JSDOC_INTERNAL_ANNOTATION);
 };
 
-const getAnnotatedRanges = (hovers: vscode.Hover[][]): vscode.Range[] => {
-  return hovers.reduce((ranges: vscode.Range[], hover: vscode.Hover[]) => {
-    if (
-      containsInternalAnnotations(hover) ||
-      containsAlphaAnnotations(hover) ||
-      containsBetaAnnotations(hover)
-    ) {
-      return [...ranges, hover.pop()?.range as vscode.Range];
+const getAnnotatedRanges = (hovers: vscode.Hover[][]): AnnotatedRangeSet => {
+  const annotatedRanges: AnnotatedRangeSet = {
+    alpha: [],
+    beta: [],
+    internal: [],
+  };
+
+  hovers.reduce((ranges: vscode.Range[], hover: vscode.Hover[]) => {
+    let range: vscode.Range;
+    // Just need to add file information here
+    if (containsInternalAnnotations(hover)) {
+      range = hover.pop()?.range as vscode.Range;
+      annotatedRanges.internal.push(range);
+      return [...ranges, range];
+    }
+    if (containsAlphaAnnotations(hover)) {
+      range = hover.pop()?.range as vscode.Range;
+      annotatedRanges.alpha.push(range);
+      return [...ranges, range];
+    }
+    if (containsBetaAnnotations(hover)) {
+      range = hover.pop()?.range as vscode.Range;
+      annotatedRanges.beta.push(range);
+      return [...ranges, range];
     }
     return ranges;
   }, []);
+
+  return annotatedRanges;
 };
 
 const paintAnnotations = (
@@ -117,8 +159,7 @@ const paintAnnotations = (
 
 const onDidUpdateTextDocument = async (
   document: vscode.TextDocument | undefined,
-  editor: vscode.TextEditor | undefined,
-  decorationType: vscode.TextEditorDecorationType
+  editor: vscode.TextEditor | undefined
 ) => {
   if (editor && document) {
     if (showAnnotations) {
@@ -127,8 +168,14 @@ const onDidUpdateTextDocument = async (
         document,
         positions
       );
-      const prerelease: vscode.Range[] = getAnnotatedRanges(annotations);
-      paintAnnotations(editor, prerelease, decorationType);
+      const prerelease: AnnotatedRangeSet = getAnnotatedRanges(annotations);
+      paintAnnotations(editor, prerelease.internal, internalDecorationType);
+      paintAnnotations(editor, prerelease.alpha, alphaDecorationType);
+      paintAnnotations(editor, prerelease.beta, betaDecorationType);
+      annotationsForFiles[document.fileName] = prerelease;
+      onAnnotationsUpdate.listeners.forEach((listener) => {
+        listener(annotationsForFiles);
+      });
     } else {
       clearAnnotations();
     }
@@ -145,9 +192,7 @@ export const updateAnnotations = () => {
     timer = null;
   }
   vscode.window.visibleTextEditors.forEach((editor) => {
-    if (decorationType) {
-      onDidUpdateTextDocument(editor.document, editor, decorationType);
-    }
+    onDidUpdateTextDocument(editor.document, editor);
   });
   timer = setInterval(() => {
     updateAnnotations();
@@ -161,8 +206,14 @@ const clearAnnotations = () => {
   }
 
   vscode.window.visibleTextEditors.forEach((editor) => {
-    if (decorationType) {
-      editor.setDecorations(decorationType, []);
+    if (internalDecorationType) {
+      editor.setDecorations(internalDecorationType, []);
+    }
+    if (alphaDecorationType) {
+      editor.setDecorations(alphaDecorationType, []);
+    }
+    if (betaDecorationType) {
+      editor.setDecorations(betaDecorationType, []);
     }
   });
 };
