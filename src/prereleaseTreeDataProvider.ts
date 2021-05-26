@@ -1,14 +1,18 @@
 import {
+  commands,
   Event,
   EventEmitter,
   ProviderResult,
   Range,
+  Selection,
+  TextEditorRevealType,
   ThemeIcon,
   TreeDataProvider,
   TreeItem,
   TreeItemCollapsibleState,
   Uri,
   window,
+  workspace,
 } from 'vscode';
 
 import {
@@ -41,6 +45,11 @@ class LineItemTreeItem extends PrereleaseTreeItem {
     public readonly range: Range
   ) {
     super(label, TreeItemCollapsibleState.None, TreeItemType.lineitem);
+    this.command = {
+      command: 'prerelease.opentosymbol',
+      title: 'Show in editor',
+      arguments: [parentFile, range],
+    };
   }
 }
 
@@ -59,9 +68,9 @@ class FileTreeItem extends PrereleaseTreeItem {
    * @param path This is the absolute path to the file.  It will also be used as the tooltip.
    * @param label This should only be the name of the file.
    */
-  constructor(public readonly path: string, public readonly label: string) {
+  constructor(public readonly path: Uri, public readonly label: string) {
     super(label, TreeItemCollapsibleState.Collapsed, TreeItemType.file);
-    this.tooltip = path;
+    this.tooltip = path.fsPath;
     this.iconPath = ThemeIcon.File;
   }
 }
@@ -92,7 +101,27 @@ export class PrereleaseTreeDataProvider
       TreeItemCollapsibleState.Collapsed,
       TreeItemType.root
     );
+    commands.registerCommand(
+      'prerelease.opentosymbol',
+      (file: string, range: Range) => this.openFileToSymbol(file, range)
+    );
   }
+
+  openFileToSymbol = async (file: string, range: Range) => {
+    try {
+      const document = await workspace.openTextDocument(file);
+      const editor = await window.showTextDocument(document);
+      if (editor) {
+        editor.selection = new Selection(range.start, range.end);
+        editor.revealRange(
+          range,
+          TextEditorRevealType.InCenterIfOutsideViewport
+        );
+      }
+    } catch {
+      // NOP - if we can't open the file, we just don't open the file.
+    }
+  };
 
   getTreeItem(element: PrereleaseTreeItem): TreeItem | Thenable<TreeItem> {
     return element;
@@ -114,7 +143,7 @@ export class PrereleaseTreeDataProvider
         const fileName = activeFilename.substring(
           activeFilename.lastIndexOf('/') + 1
         );
-        const treeItem = new FileTreeItem(fileUri.fsPath, fileName);
+        const treeItem = new FileTreeItem(fileUri, fileName);
         treeItem.resourceUri = Uri.parse(`file://${activeFilename}`);
         return Promise.resolve([treeItem]);
       }
@@ -123,13 +152,16 @@ export class PrereleaseTreeDataProvider
 
     if (element.itemType === TreeItemType.file) {
       const currentAnnotationNode =
-        this.annotations[(element as FileTreeItem).path];
+        this.annotations[(element as FileTreeItem).path.fsPath];
       if (currentAnnotationNode) {
         // This is a file name node, need to return the phase nodes
         // element.
         const children: PhaseTreeItem[] = [];
         Object.keys(currentAnnotationNode).forEach((phase) => {
-          const node = new PhaseTreeItem(phase, (element as FileTreeItem).path);
+          const node = new PhaseTreeItem(
+            phase,
+            (element as FileTreeItem).path.fsPath
+          );
           children.push(node);
         });
         return Promise.resolve(children);
