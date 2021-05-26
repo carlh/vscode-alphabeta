@@ -114,7 +114,17 @@
 					"highContrast": "#12A64B88"
 				}
 			}
-		]
+		],
+		"views": {
+			"explorer": [
+				{
+					"id": "AlphaBETA.Prerelease",
+					"type": "tree",
+					"name": "Prelease",
+					"visibility": "collapsed"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
