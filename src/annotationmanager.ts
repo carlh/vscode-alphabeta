@@ -213,7 +213,12 @@ const onDidUpdateTextDocument = async (
   if (editor && document) {
     if (showAnnotations) {
       const languageId = document.languageId;
-      if (languageId === 'typescript' || languageId === 'javascript') {
+      if (
+        languageId === 'typescript' ||
+        languageId === 'typescriptreact' ||
+        languageId === 'javascript' ||
+        languageId === 'javascriptreact'
+      ) {
         const positions: vscode.Position[] = getIdentifierPositions(document);
         const annotations: vscode.Hover[][] = await getHoverAnnotations(
           document,

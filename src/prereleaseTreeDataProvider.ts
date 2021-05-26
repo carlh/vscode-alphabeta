@@ -54,8 +54,15 @@ class PhaseTreeItem extends PrereleaseTreeItem {
 }
 
 class FileTreeItem extends PrereleaseTreeItem {
-  constructor(public readonly label: string) {
+  /**
+   *
+   * @param path This is the absolute path to the file.  It will also be used as the tooltip.
+   * @param label This should only be the name of the file.
+   */
+  constructor(public readonly path: string, public readonly label: string) {
     super(label, TreeItemCollapsibleState.Collapsed, TreeItemType.file);
+    this.tooltip = path;
+    this.iconPath = ThemeIcon.File;
   }
 }
 
@@ -103,7 +110,11 @@ export class PrereleaseTreeDataProvider
       const activeFilename = window.activeTextEditor?.document.fileName ?? '';
       const annotation = this.annotations[activeFilename];
       if (annotation) {
-        const treeItem = new FileTreeItem(activeFilename);
+        const fileUri = Uri.parse(`file://${activeFilename}`);
+        const fileName = activeFilename.substring(
+          activeFilename.lastIndexOf('/') + 1
+        );
+        const treeItem = new FileTreeItem(fileUri.fsPath, fileName);
         treeItem.resourceUri = Uri.parse(`file://${activeFilename}`);
         return Promise.resolve([treeItem]);
       }
@@ -111,13 +122,14 @@ export class PrereleaseTreeDataProvider
     }
 
     if (element.itemType === TreeItemType.file) {
-      const currentAnnotationNode = this.annotations[element.label];
+      const currentAnnotationNode =
+        this.annotations[(element as FileTreeItem).path];
       if (currentAnnotationNode) {
         // This is a file name node, need to return the phase nodes
         // element.
         const children: PhaseTreeItem[] = [];
         Object.keys(currentAnnotationNode).forEach((phase) => {
-          const node = new PhaseTreeItem(phase, element.label);
+          const node = new PhaseTreeItem(phase, (element as FileTreeItem).path);
           children.push(node);
         });
         return Promise.resolve(children);
