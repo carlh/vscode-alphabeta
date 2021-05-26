@@ -2,6 +2,7 @@ import {
   Event,
   EventEmitter,
   ProviderResult,
+  Range,
   ThemeIcon,
   TreeDataProvider,
   TreeItem,
@@ -10,7 +11,11 @@ import {
   window,
 } from 'vscode';
 
-import { FileAnnotations, onAnnotationsUpdate } from './annotationmanager';
+import {
+  AnnotatedRange,
+  FileAnnotations,
+  onAnnotationsUpdate,
+} from './annotationmanager';
 
 enum TreeItemType {
   root,
@@ -30,7 +35,11 @@ class PrereleaseTreeItem extends TreeItem {
 }
 
 class LineItemTreeItem extends PrereleaseTreeItem {
-  constructor(public readonly label: string) {
+  constructor(
+    public readonly label: string,
+    public readonly parentFile: string,
+    public readonly range: Range
+  ) {
     super(label, TreeItemCollapsibleState.None, TreeItemType.lineitem);
   }
 }
@@ -113,8 +122,39 @@ export class PrereleaseTreeDataProvider
         });
         return Promise.resolve(children);
       }
+      return Promise.resolve([]);
     }
 
+    if (element.itemType === TreeItemType.phase) {
+      const phaseItem = element as PhaseTreeItem;
+      const currentAnnotationNode = this.annotations[phaseItem.parentFile];
+      if (currentAnnotationNode) {
+        const lineItems: LineItemTreeItem[] = [];
+        let fileAnnotations: AnnotatedRange[] = [];
+        const phase = phaseItem.label;
+        if (phase === 'alpha') {
+          fileAnnotations = currentAnnotationNode.alpha;
+        } else if (phase === 'beta') {
+          fileAnnotations = currentAnnotationNode.beta;
+        } else if (phase === 'internal') {
+          fileAnnotations = currentAnnotationNode.internal;
+        }
+
+        fileAnnotations.forEach((annotation) => {
+          const label = `[line: ${annotation.range.start.line + 1}, char: ${
+            annotation.range.start.character + 1
+          }] - ${annotation.name}`;
+          const node = new LineItemTreeItem(
+            label,
+            phaseItem.parentFile,
+            annotation.range
+          );
+          lineItems.push(node);
+        });
+        return Promise.resolve(lineItems);
+      }
+      return Promise.resolve([]);
+    }
     return Promise.resolve([]);
   }
 }
