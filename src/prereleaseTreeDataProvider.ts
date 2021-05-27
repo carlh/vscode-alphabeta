@@ -21,12 +21,17 @@ import {
   onAnnotationsUpdate,
 } from './annotationmanager';
 
+import { platform } from 'os';
+
 enum TreeItemType {
   root,
   file,
   phase,
   lineitem,
 }
+
+const pathSeparator = platform() === 'win32' ? '\\' : '/';
+const platformFileScheme = platform() === 'win32' ? 'file:///' : 'file://';
 
 class PrereleaseTreeItem extends TreeItem {
   constructor(
@@ -139,12 +144,14 @@ export class PrereleaseTreeDataProvider
       const activeFilename = window.activeTextEditor?.document.fileName ?? '';
       const annotation = this.annotations[activeFilename];
       if (annotation) {
-        const fileUri = Uri.parse(`file://${activeFilename}`);
+        const fileUri = Uri.parse(`${platformFileScheme}${activeFilename}`);
         const fileName = activeFilename.substring(
-          activeFilename.lastIndexOf('/') + 1
+          activeFilename.lastIndexOf(pathSeparator) + 1
         );
         const treeItem = new FileTreeItem(fileUri, fileName);
-        treeItem.resourceUri = Uri.parse(`file://${activeFilename}`);
+        treeItem.resourceUri = Uri.parse(
+          `${platformFileScheme}${activeFilename}`
+        );
         return Promise.resolve([treeItem]);
       }
       return Promise.resolve([]);
