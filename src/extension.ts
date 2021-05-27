@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { updateAnnotations } from './annotationmanager';
 import { updateConfiguration } from './configurationmanager';
 import { registerPrereleaseStatusBarItem } from './prereleaseStatusBarItem';
+import { PrereleaseTreeDataProvider } from './prereleaseTreeDataProvider';
 
 let disposables: vscode.Disposable[] = [];
 // this method is called when your extension is activated
@@ -33,6 +34,13 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
       updateAnnotations();
     })
+  );
+
+  disposables.push(
+    vscode.window.registerTreeDataProvider(
+      'AlphaBETA.Prerelease',
+      new PrereleaseTreeDataProvider()
+    )
   );
 }
 

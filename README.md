@@ -37,6 +37,8 @@ AlphaBETA provides the following settings:
 * `AlphaBETA.phase.showInternal`: enable/disable highlighting of `@internal` symbols
 * `AlphaBETA.phase.showAlpha`: enable/disable highlighting of `@alpha` symbols
 * `AlphaBETA.phase.showBeta`: enable/disable highlighting of `@beta` symbols
+* `AlphaBETA.reporting.showInStatusBar`: enable/disable status bar item showing count of prerelease items in current file.
+* ``
 
 ## Known Issues
 

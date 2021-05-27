@@ -21,10 +21,15 @@ const JSDOC_BETA_ANNOTATION = '*@beta*';
 
 type Phase = 'internal' | 'alpha' | 'beta';
 
+export type AnnotatedRange = {
+  name: string;
+  range: vscode.Range;
+};
+
 export type AnnotatedRangeSet = {
-  alpha: vscode.Range[];
-  beta: vscode.Range[];
-  internal: vscode.Range[];
+  alpha: AnnotatedRange[];
+  beta: AnnotatedRange[];
+  internal: AnnotatedRange[];
 };
 
 export interface FileAnnotations {
@@ -117,30 +122,53 @@ const containsInternalAnnotations = (hovers: vscode.Hover[]): boolean => {
   return containsMarkedRanges(hovers, JSDOC_INTERNAL_ANNOTATION);
 };
 
-const getAnnotatedRanges = (hovers: vscode.Hover[][]): AnnotatedRangeSet => {
+const getAnnotatedRanges = (
+  hovers: vscode.Hover[][],
+  document: vscode.TextDocument
+): AnnotatedRangeSet => {
   const annotatedRanges: AnnotatedRangeSet = {
     alpha: [],
     beta: [],
     internal: [],
   };
 
+  const annotatedRangeFromHover = (
+    hover: vscode.Hover,
+    document: vscode.TextDocument
+  ): AnnotatedRange => {
+    const range = hover.range as vscode.Range;
+    const symbolName = document.getText(range);
+    return {
+      name: symbolName,
+      range: range,
+    };
+  };
+
   hovers.reduce((ranges: vscode.Range[], hover: vscode.Hover[]) => {
-    let range: vscode.Range;
-    // Just need to add file information here
     if (containsInternalAnnotations(hover)) {
-      range = hover.pop()?.range as vscode.Range;
-      annotatedRanges.internal.push(range);
-      return [...ranges, range];
-    }
-    if (containsAlphaAnnotations(hover)) {
-      range = hover.pop()?.range as vscode.Range;
-      annotatedRanges.alpha.push(range);
-      return [...ranges, range];
-    }
-    if (containsBetaAnnotations(hover)) {
-      range = hover.pop()?.range as vscode.Range;
-      annotatedRanges.beta.push(range);
-      return [...ranges, range];
+      const currentHover = hover.pop();
+      if (currentHover) {
+        annotatedRanges.internal.push(
+          annotatedRangeFromHover(currentHover, document)
+        );
+        return [...ranges, currentHover?.range as vscode.Range];
+      }
+    } else if (containsAlphaAnnotations(hover)) {
+      const currentHover = hover.pop();
+      if (currentHover) {
+        annotatedRanges.alpha.push(
+          annotatedRangeFromHover(currentHover, document)
+        );
+        return [...ranges, currentHover?.range as vscode.Range];
+      }
+    } else if (containsBetaAnnotations(hover)) {
+      const currentHover = hover.pop();
+      if (currentHover) {
+        annotatedRanges.beta.push(
+          annotatedRangeFromHover(currentHover, document)
+        );
+        return [...ranges, currentHover?.range as vscode.Range];
+      }
     }
     return ranges;
   }, []);
@@ -150,11 +178,32 @@ const getAnnotatedRanges = (hovers: vscode.Hover[][]): AnnotatedRangeSet => {
 
 const paintAnnotations = (
   editor: vscode.TextEditor,
-  ranges: vscode.Range[],
-  decorationType: vscode.TextEditorDecorationType
+  annotatedRanges: AnnotatedRangeSet
 ) => {
-  editor.setDecorations(decorationType, []);
-  editor.setDecorations(decorationType, ranges);
+  annotatedRanges.internal.forEach((annotation) => {});
+
+  const setDecorations = (
+    decorationType: vscode.TextEditorDecorationType,
+    ranges: vscode.Range[]
+  ) => {
+    editor.setDecorations(decorationType, []);
+    editor.setDecorations(decorationType, ranges);
+  };
+
+  const internalRanges = annotatedRanges.internal.map((value) => {
+    return value.range;
+  });
+
+  const alphaRanges = annotatedRanges.alpha.map((value) => {
+    return value.range;
+  });
+
+  const betaRanges = annotatedRanges.beta.map((value) => {
+    return value.range;
+  });
+  setDecorations(internalDecorationType, internalRanges);
+  setDecorations(alphaDecorationType, alphaRanges);
+  setDecorations(betaDecorationType, betaRanges);
 };
 
 const onDidUpdateTextDocument = async (
@@ -163,19 +212,28 @@ const onDidUpdateTextDocument = async (
 ) => {
   if (editor && document) {
     if (showAnnotations) {
-      const positions: vscode.Position[] = getIdentifierPositions(document);
-      const annotations: vscode.Hover[][] = await getHoverAnnotations(
-        document,
-        positions
-      );
-      const prerelease: AnnotatedRangeSet = getAnnotatedRanges(annotations);
-      paintAnnotations(editor, prerelease.internal, internalDecorationType);
-      paintAnnotations(editor, prerelease.alpha, alphaDecorationType);
-      paintAnnotations(editor, prerelease.beta, betaDecorationType);
-      annotationsForFiles[document.fileName] = prerelease;
-      onAnnotationsUpdate.listeners.forEach((listener) => {
-        listener(annotationsForFiles);
-      });
+      const languageId = document.languageId;
+      if (
+        languageId === 'typescript' ||
+        languageId === 'typescriptreact' ||
+        languageId === 'javascript' ||
+        languageId === 'javascriptreact'
+      ) {
+        const positions: vscode.Position[] = getIdentifierPositions(document);
+        const annotations: vscode.Hover[][] = await getHoverAnnotations(
+          document,
+          positions
+        );
+        const prerelease: AnnotatedRangeSet = getAnnotatedRanges(
+          annotations,
+          document
+        );
+        paintAnnotations(editor, prerelease);
+        annotationsForFiles[document.fileName] = prerelease;
+        onAnnotationsUpdate.listeners.forEach((listener) => {
+          listener(annotationsForFiles);
+        });
+      }
     } else {
       clearAnnotations();
     }
