@@ -1,25 +1,26 @@
-import * as vscode from 'vscode';
-import * as ts from 'typescript';
-import { MarkdownString } from 'vscode';
+import * as vscode from "vscode";
+import * as ts from "typescript";
+import { MarkdownString } from "vscode";
 import {
   onConfigurationUpdate,
   refreshInterval,
   showAlpha,
   showAnnotations,
   showBeta,
+  showDeprecated,
   showInternal,
-} from './configurationmanager';
+} from "./configurationmanager";
 import {
   internalDecorationType,
   betaDecorationType,
   alphaDecorationType,
-} from './decorations';
+  deprecatedDecorationType,
+} from "./decorations";
 
-const JSDOC_INTERNAL_ANNOTATION = '*@internal*';
-const JSDOC_ALPHA_ANNOTATION = '*@alpha*';
-const JSDOC_BETA_ANNOTATION = '*@beta*';
-
-type Phase = 'internal' | 'alpha' | 'beta';
+const JSDOC_INTERNAL_ANNOTATION = "*@internal*";
+const JSDOC_ALPHA_ANNOTATION = "*@alpha*";
+const JSDOC_BETA_ANNOTATION = "*@beta*";
+const JSDOC_DEPRECATED_ANNOTATION = "*@deprecated*";
 
 export type AnnotatedRange = {
   name: string;
@@ -30,6 +31,7 @@ export type AnnotatedRangeSet = {
   alpha: AnnotatedRange[];
   beta: AnnotatedRange[];
   internal: AnnotatedRange[];
+  deprecated: AnnotatedRange[];
 };
 
 export interface FileAnnotations {
@@ -81,7 +83,7 @@ const getHoverAnnotations = async (
   return Promise.all(
     positions.map((position: vscode.Position): Thenable<vscode.Hover[]> => {
       const thenable: Thenable<vscode.Hover[]> = vscode.commands.executeCommand(
-        'vscode.executeHoverProvider',
+        "vscode.executeHoverProvider",
         document.uri,
         position
       ) as Thenable<vscode.Hover[]>;
@@ -122,6 +124,13 @@ const containsInternalAnnotations = (hovers: vscode.Hover[]): boolean => {
   return containsMarkedRanges(hovers, JSDOC_INTERNAL_ANNOTATION);
 };
 
+const containsDeprecatedAnnotations = (hovers: vscode.Hover[]): boolean => {
+  if (!showDeprecated || !showAnnotations) {
+    return false;
+  }
+  return containsMarkedRanges(hovers, JSDOC_DEPRECATED_ANNOTATION);
+};
+
 const getAnnotatedRanges = (
   hovers: vscode.Hover[][],
   document: vscode.TextDocument
@@ -130,6 +139,7 @@ const getAnnotatedRanges = (
     alpha: [],
     beta: [],
     internal: [],
+    deprecated: [],
   };
 
   const annotatedRangeFromHover = (
@@ -169,6 +179,14 @@ const getAnnotatedRanges = (
         );
         return [...ranges, currentHover?.range as vscode.Range];
       }
+    } else if (containsDeprecatedAnnotations(hover)) {
+      const currentHover = hover.pop();
+      if (currentHover) {
+        annotatedRanges.deprecated.push(
+          annotatedRangeFromHover(currentHover, document)
+        );
+        return [...ranges, currentHover?.range as vscode.Range];
+      }
     }
     return ranges;
   }, []);
@@ -201,9 +219,15 @@ const paintAnnotations = (
   const betaRanges = annotatedRanges.beta.map((value) => {
     return value.range;
   });
+
+  const deprecatedRanges = annotatedRanges.deprecated.map((value) => {
+    return value.range;
+  });
+
   setDecorations(internalDecorationType, internalRanges);
   setDecorations(alphaDecorationType, alphaRanges);
   setDecorations(betaDecorationType, betaRanges);
+  setDecorations(deprecatedDecorationType, deprecatedRanges);
 };
 
 const onDidUpdateTextDocument = async (
@@ -214,10 +238,10 @@ const onDidUpdateTextDocument = async (
     if (showAnnotations) {
       const languageId = document.languageId;
       if (
-        languageId === 'typescript' ||
-        languageId === 'typescriptreact' ||
-        languageId === 'javascript' ||
-        languageId === 'javascriptreact'
+        languageId === "typescript" ||
+        languageId === "typescriptreact" ||
+        languageId === "javascript" ||
+        languageId === "javascriptreact"
       ) {
         const positions: vscode.Position[] = getIdentifierPositions(document);
         const annotations: vscode.Hover[][] = await getHoverAnnotations(
@@ -272,6 +296,9 @@ const clearAnnotations = () => {
     }
     if (betaDecorationType) {
       editor.setDecorations(betaDecorationType, []);
+    }
+    if (deprecatedDecorationType) {
+      editor.setDecorations(deprecatedDecorationType, []);
     }
   });
 };

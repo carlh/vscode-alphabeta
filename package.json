@@ -1,152 +1,167 @@
 {
-	"name": "alphabeta",
-	"displayName": "AlphaBETA",
-	"publisher": "CarlHinkle",
-	"description": "This extension adds an indicator when you use a symbol that is tagged with @alpha, @beta, and @internal in the JS or TS documentation comment.",
-	"keywords": [
-		"prerelease",
-		"jsdoc",
-		"javascript",
-		"typescript"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/carlh/vscode-alphabeta"
-	},
-	"preview": true,
-	"qna": "marketplace",
-	"icon": "img/icon.png",
-	"version": "1.2.0",
-	"engines": {
-		"vscode": "^1.55.0"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"onLanguage:javascript",
-		"onLanguage:javascriptreact",
-		"onLanguage:typescript",
-		"onLanguage:typescriptreact"
-	],
-	"main": "./out/extension.js",
-	"contributes": {
-		"commands": [
-			{
-				"command": "alphabeta.showPrereleaseAnnotations",
-				"title": "Show Prerelease Annotations",
-				"category": "AlphaBETA"
-			},
-			{
-				"command": "alphabeta.showPrereleaseCount",
-				"title": "Show Prerelease Count",
-				"category": "AlphaBETA"
-			}
-		],
-		"configuration": {
-			"title": "AlphaBETA",
-			"properties": {
-				"AlphaBETA.control.showAnnotations": {
-					"type": "boolean",
-					"scope": "window",
-					"default": true,
-					"description": "If this is enabled, any usage of APIs marked as @alpha, @beta, or @internal in their JSDoc comments will be highlighted."
-				},
-				"AlphaBETA.phase.showInternal": {
-					"type": "boolean",
-					"scope": "window",
-					"default": true,
-					"markdownDescription": "If enabled, symbols annotated with the `@internal` flag will be highlighted.  Depends on `#AlphaBETA.control.showAnnotations#`"
-				},
-				"AlphaBETA.phase.showAlpha": {
-					"type": "boolean",
-					"scope": "window",
-					"default": true,
-					"markdownDescription": "If enabled, symbols annotated with the `@alpha` flag will be highlighted.  Depends on `#AlphaBETA.control.showAnnotations#`"
-				},
-				"AlphaBETA.phase.showBeta": {
-					"type": "boolean",
-					"scope": "window",
-					"default": true,
-					"markdownDescription": "If enabled, symbols annotated with the `@beta` flag will be highlighted.  Depends on `#AlphaBETA.control.showAnnotations#`"
-				},
-				"AlphaBETA.control.refreshInterval": {
-					"type": "integer",
-					"scope": "window",
-					"default": 10,
-					"minimum": 2,
-					"maximum": 60,
-					"description": "Specifies the number of seconds that elapse between updates.  If you experience slow performance you can increase this number."
-				},
-				"AlphaBETA.reporting.showInStatusBar": {
-					"type": "boolean",
-					"scope": "window",
-					"default": true,
-					"markdownDescription": "If enabled and the active file is using any `prerelease` symbols, a message will be shown in the status bar.  Clicking the message will open a report listing each usage and its line number."
-				}
-			}
-		},
-		"colors": [
-			{
-				"id": "AlphaBETA.internal",
-				"description": "Color for symbols flagged as @internal",
-				"defaults": {
-					"dark": "#91000D88",
-					"light": "#91000D88",
-					"highContrast": "#91000D88"
-				}
-			},
-			{
-				"id": "AlphaBETA.alpha",
-				"description": "Color for symbols flagged as @alpha",
-				"defaults": {
-					"dark": "#C0BC1788",
-					"light": "#C0BC1788",
-					"highContrast": "#C0BC1788"
-				}
-			},
-			{
-				"id": "AlphaBETA.beta",
-				"description": "Color for symbols flagged as @beta",
-				"defaults": {
-					"dark": "#12A64B88",
-					"light": "#12A64B88",
-					"highContrast": "#12A64B88"
-				}
-			}
-		],
-		"views": {
-			"explorer": [
-				{
-					"id": "AlphaBETA.Prerelease",
-					"type": "tree",
-					"name": "Prelease",
-					"visibility": "collapsed"
-				}
-			]
-		}
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile && npm run lint",
-		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
-	},
-	"devDependencies": {
-		"@types/vscode": "^1.55.0",
-		"@types/glob": "^7.1.3",
-		"@types/mocha": "^8.0.4",
-		"@types/node": "^12.11.7",
-		"eslint": "^7.19.0",
-		"@typescript-eslint/eslint-plugin": "^4.14.1",
-		"@typescript-eslint/parser": "^4.14.1",
-		"glob": "^7.1.6",
-		"mocha": "^8.2.1",
-		"vscode-test": "^1.5.0"
-	},
-	"dependencies": {
-		"typescript": "^4.1.3"
-	}
+  "name": "alphabeta",
+  "displayName": "AlphaBETA",
+  "publisher": "CarlHinkle",
+  "description": "This extension adds an indicator when you use a symbol that is tagged with @alpha, @beta, and @internal in the JS or TS documentation comment.",
+  "keywords": [
+    "prerelease",
+    "jsdoc",
+    "javascript",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carlh/vscode-alphabeta"
+  },
+  "preview": true,
+  "qna": "marketplace",
+  "icon": "img/icon.png",
+  "version": "1.3.0",
+  "engines": {
+    "vscode": "^1.55.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "alphabeta.showPrereleaseAnnotations",
+        "title": "Show Prerelease Annotations",
+        "category": "AlphaBETA"
+      },
+      {
+        "command": "alphabeta.showPrereleaseCount",
+        "title": "Show Prerelease Count",
+        "category": "AlphaBETA"
+      }
+    ],
+    "configuration": {
+      "title": "AlphaBETA",
+      "properties": {
+        "AlphaBETA.control.showAnnotations": {
+          "type": "boolean",
+          "scope": "window",
+          "default": true,
+          "description": "If this is enabled, any usage of APIs marked as @alpha, @beta, @internal, or @deprecated in their JSDoc comments will be highlighted."
+        },
+        "AlphaBETA.phase.showInternal": {
+          "type": "boolean",
+          "scope": "window",
+          "default": true,
+          "markdownDescription": "If enabled, symbols annotated with the `@internal` flag will be highlighted.  Depends on `#AlphaBETA.control.showAnnotations#`"
+        },
+        "AlphaBETA.phase.showAlpha": {
+          "type": "boolean",
+          "scope": "window",
+          "default": true,
+          "markdownDescription": "If enabled, symbols annotated with the `@alpha` flag will be highlighted.  Depends on `#AlphaBETA.control.showAnnotations#`"
+        },
+        "AlphaBETA.phase.showBeta": {
+          "type": "boolean",
+          "scope": "window",
+          "default": true,
+          "markdownDescription": "If enabled, symbols annotated with the `@beta` flag will be highlighted.  Depends on `#AlphaBETA.control.showAnnotations#`"
+        },
+        "AlphaBETA.phase.showDeprecated": {
+          "type": "boolean",
+          "scope": "window",
+          "default": true,
+          "markdownDescription": "If enabled, symbols annotated with the `@deprecated` flag will be highlighted.  Depends on `#AlphaBETA.control.showAnnotations#`"
+        },
+        "AlphaBETA.control.refreshInterval": {
+          "type": "integer",
+          "scope": "window",
+          "default": 10,
+          "minimum": 2,
+          "maximum": 60,
+          "description": "Specifies the number of seconds that elapse between updates.  If you experience slow performance you can increase this number."
+        },
+        "AlphaBETA.reporting.showInStatusBar": {
+          "type": "boolean",
+          "scope": "window",
+          "default": true,
+          "markdownDescription": "If enabled and the active file is using any `prerelease` symbols, a message will be shown in the status bar.  Clicking the message will open a report listing each usage and its line number."
+        }
+      }
+    },
+    "colors": [
+      {
+        "id": "AlphaBETA.internal",
+        "description": "Color for symbols flagged as @internal",
+        "defaults": {
+          "dark": "#91000D88",
+          "light": "#91000D88",
+          "highContrast": "#91000D88"
+        }
+      },
+      {
+        "id": "AlphaBETA.alpha",
+        "description": "Color for symbols flagged as @alpha",
+        "defaults": {
+          "dark": "#C0BC1788",
+          "light": "#C0BC1788",
+          "highContrast": "#C0BC1788"
+        }
+      },
+      {
+        "id": "AlphaBETA.beta",
+        "description": "Color for symbols flagged as @beta",
+        "defaults": {
+          "dark": "#12A64B88",
+          "light": "#12A64B88",
+          "highContrast": "#12A64B88"
+        }
+      },
+      {
+        "id": "AlphaBETA.deprecated",
+        "description": "Color for symbols flagged as @deprecated",
+        "defaults": {
+          "dark": "#0e141088",
+          "light": "#f0f7f2e8",
+          "highContrast": "#191b1a88"
+        }
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "AlphaBETA.Prerelease",
+          "type": "tree",
+          "name": "Prelease",
+          "visibility": "collapsed"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.55.0",
+    "@types/glob": "^7.1.3",
+    "@types/mocha": "^8.0.4",
+    "@types/node": "^12.11.7",
+    "eslint": "^7.19.0",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.1",
+    "glob": "^7.1.6",
+    "mocha": "^8.2.1",
+    "vscode-test": "^1.5.0"
+  },
+  "dependencies": {
+    "typescript": "^4.1.3"
+  }
 }

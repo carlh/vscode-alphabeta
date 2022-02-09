@@ -4,6 +4,10 @@ All notable changes to the "alphabeta" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## v1.3.0
+<hr />
+- Added support for `@deprecated` JSDoc tag.
+
 ## v1.2.0 (27 May 2021)
 <hr />
 
@@ -13,6 +17,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Tree in the EXPLORER sidebar showing all of the prereleased items being used in the current file.  
 - Clicking on an item in the tree zooms to that symbol in the editor and selects it.
 
+## v1.1.0
+<hr />
+- Lower minimum VS Code version to ^1.55.0
 
 ## v1.0.0
 <hr />
