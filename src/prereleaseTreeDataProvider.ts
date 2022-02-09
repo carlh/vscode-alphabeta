@@ -183,12 +183,14 @@ export class PrereleaseTreeDataProvider
         const lineItems: LineItemTreeItem[] = [];
         let fileAnnotations: AnnotatedRange[] = [];
         const phase = phaseItem.label;
-        if (phase === 'alpha') {
+        if (phase === "alpha") {
           fileAnnotations = currentAnnotationNode.alpha;
-        } else if (phase === 'beta') {
+        } else if (phase === "beta") {
           fileAnnotations = currentAnnotationNode.beta;
-        } else if (phase === 'internal') {
+        } else if (phase === "internal") {
           fileAnnotations = currentAnnotationNode.internal;
+        } else if (phase === "deprecated") {
+          fileAnnotations = currentAnnotationNode.deprecated;
         }
 
         fileAnnotations.forEach((annotation) => {
